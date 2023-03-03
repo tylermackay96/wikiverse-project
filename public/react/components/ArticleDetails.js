@@ -1,6 +1,10 @@
 import React from 'react';
 
 export const ArticleDetails = ({ article, onBackClick }) => {
+	if (!article) {
+		return <div>Loading...</div>;
+	}
+
 	return (
 		<div>
 			<h2>{article.title}</h2>
@@ -12,5 +16,6 @@ export const ArticleDetails = ({ article, onBackClick }) => {
 		</div>
 	)
 }
+
 
 	

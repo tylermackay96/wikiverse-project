@@ -9,6 +9,14 @@ export const App = () => {
 
 	const [pages, setPages] = useState([]);
 	const [selectedArticle, setSelectedArticle] = useState(null);
+	const [isAddingArticle, setIsAddingArticle] = useState(false);
+	const [newArticleData, setNewArticleData] = useState({
+		title: '',
+		content: '',
+		authorName: '',
+		authorEmail: '',
+		tags: ''
+	});
 
 	async function fetchPages(){
 		try {
@@ -30,6 +38,32 @@ export const App = () => {
 		}
 	}
 
+	async function addArticle() {
+		try {
+			const response = await fetch(`${apiURL}/wiki`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					...newArticleData
+				})
+			});
+			const addedArticle = await response.json();
+			setPages([...pages, addedArticle]);
+			setNewArticleData({
+				title: '',
+				content: '',
+				authorName: '',
+				authorEmail: '',
+				tags: ''
+			});
+			setIsAddingArticle(false);
+		} catch (err) {
+			console.log("Oh no an error! ", err)
+		}
+	}
+
 	useEffect(() => {
 		fetchPages();
 	}, []);
@@ -37,15 +71,67 @@ export const App = () => {
 	return (
 		<main>	
 			<h1>WikiVerse</h1>
-			{selectedArticle ? (
-				<ArticleDetails article={selectedArticle} onBackClick={() => setSelectedArticle(null)} />
-			) : (
-				<>
-					<h2>An interesting 📚</h2>
-					<PagesList pages={pages} onArticleClick={fetchArticle} />
-				</>
-			)}
-		</main>
-	)
-}
-
+			{isAddingArticle ? (
+				<div>
+					<h2>Add New Article</h2>
+					<form onSubmit={(e) => {
+						e.preventDefault();
+						addArticle();
+					}}>
+						<label>
+							Title:
+							<input
+								type="text"
+								value={newArticleData.title}
+								onChange={(e) => setNewArticleData({...newArticleData, title: e.target.value})}
+								required
+							/>
+						</label>
+						<label>
+							Content:
+							<textarea
+								value={newArticleData.content}
+								onChange={(e) => setNewArticleData({...newArticleData, content: e.target.value})}
+								required
+							/>
+						</label>
+						<label>
+							Author Name:
+							<input
+								type="text"
+								value={newArticleData.authorName}
+								onChange={(e) => setNewArticleData({...newArticleData, authorName: e.target.value})}
+								required
+							/>
+						</label>
+						<label>
+							Author Email:
+							<input
+								type="email"
+								value={newArticleData.authorEmail}
+								onChange={(e) => setNewArticleData({...newArticleData, authorEmail: e.target.value})}
+								required
+							/>
+						</label>
+						<label>
+							Tags:
+							<input
+								type="text"
+								value={newArticleData.tags}
+								onChange={(e) => setNewArticleData({...newArticleData, tags: e.target.value})}
+required
+/>
+</label>
+<button type="submit">Add Article</button>
+<button onClick={() => setIsAddingArticle(false)}>Cancel</button>
+</form>
+</div>
+) : (
+<>
+<PagesList pages={pages} onSelectPage={fetchArticle} onAddPage={() => setIsAddingArticle(true)} />
+<ArticleDetails article={selectedArticle} />
+</>
+)}
+</main>
+);
+};
